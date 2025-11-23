@@ -1,0 +1,23 @@
+﻿from fastapi import FastAPI
+from pymongo import MongoClient
+import os
+
+app = FastAPI(title="GoodBooks API")
+
+# Database connection
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+client = MongoClient(MONGO_URI)
+db = client[os.getenv("DB_NAME", "goodbooks")]
+
+@app.get("/")
+def read_root():
+    return {"message": "GoodBooks API is running"}
+
+@app.get("/health")
+def health_check():
+    try:
+        # Test database connection
+        db.command('ping')
+        return {"status": "healthy", "database": "connected"}
+    except Exception as e:
+        return {"status": "unhealthy", "database": "disconnected", "error": str(e)}
